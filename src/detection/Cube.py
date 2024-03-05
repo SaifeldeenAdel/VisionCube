@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 import os
 
+from Utils import Utils
+from Colors import Colors
+
 imagesDir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "images"
 )
@@ -15,9 +18,9 @@ class Cube:
     def getFaces(self) -> np.array:
         return self.__faces
 
-    def nothing(self,x):
+    def nothing(self, x):
         pass
-    
+
     def detect(self, frame) -> np.array:
         if not self.initialised:
             self.writeMessage(frame, "Not initialised")
@@ -39,8 +42,19 @@ class Cube:
 def main():
     img = cv2.imread(os.path.join(imagesDir, "blue.jpg"))
     cube = Cube()
-    cube.detect(img)
+    # cap = cv2.VideoCapture(0)
 
+    # while True:
+    #     _, frame = cap.read()
+    #     yellow = Utils.detectCube(frame)
   
+    #     cv2.imshow("Y", yellow)
+    #     if cv2.waitKey(1) == ord("a"):
+    #         cv2.destroyAllWindows()
+    #         break
+
+    # cube.detect(img)
+
+
 if __name__ == "__main__":
     main()

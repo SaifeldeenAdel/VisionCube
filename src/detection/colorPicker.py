@@ -11,7 +11,6 @@ imagesDir = os.path.join(
 
 # Helper Script for finding color ranges so I can use them in my detection later
 
-
 def nothing(x):
     print(f"lower_threshold={lowerThreshold} \n upper_threshold={upperThreshold}")
 
