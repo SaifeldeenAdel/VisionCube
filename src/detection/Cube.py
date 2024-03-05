@@ -19,7 +19,6 @@ class Cube:
         pass
     
     def detect(self, frame) -> np.array:
-        
         if not self.initialised:
             self.writeMessage(frame, "Not initialised")
         return frame
@@ -37,19 +36,11 @@ class Cube:
         )
 
 
-def displayImage(img):
-    cv2.imshow("CubeSolver", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
 def main():
     img = cv2.imread(os.path.join(imagesDir, "blue.jpg"))
     cube = Cube()
     cube.detect(img)
 
-    
-
-
+  
 if __name__ == "__main__":
     main()
