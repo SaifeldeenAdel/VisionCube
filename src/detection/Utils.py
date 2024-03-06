@@ -22,31 +22,45 @@ class Utils:
         return maskedImage
 
     def detectCube(image) -> np.array:
+        image = image.copy()
+        # Process image for finding contours
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.medianBlur(gray, 1)
-        min = cv2.getTrackbarPos("MinHue", "thresh")
-        max = cv2.getTrackbarPos("MaxHue", "thresh")
+        _, thresh = cv2.threshold(blur, 42, 255, cv2.THRESH_BINARY_INV)
 
-        edges = cv2.Canny(blur, min, max)
+        # Find contours and sort by area
         contours, hierarchy = cv2.findContours(
-            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
+        contours = sorted(contours, reverse=True, key=cv2.contourArea)
 
-        for i, cnt in enumerate(contours):
-            # if the contour has no other contours inside of it
-            epsilon = 0.15 * cv2.arcLength(cnt, True)
-            approx = cv2.approxPolyDP(cnt, epsilon, True)
+        # Draw bounding box on largest contour
+        x, y, w, h = cv2.boundingRect(contours[0])
+        if abs(1 - (w / h)) < 0.05:
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(
+                image,
+                f"Face Detected {w/h}",
+                (10, 30),
+                cv2.FONT_HERSHEY_PLAIN,
+                1.5,
+                (0, 255, 0),
+                2,
+                cv2.LINE_AA,
+            )
+        else:
+            cv2.putText(
+                image,
+                f"No Face Detected {w/h}",
+                (10, 30),
+                cv2.FONT_HERSHEY_PLAIN,
+                1.5,
+                (0, 0, 255),
+                2,
+                cv2.LINE_AA,
+            )
 
-            if cv2.contourArea(cnt) > 10000:
-                print(cv2.contourArea(cnt))
-                cv2.drawContours(image, [cnt], 0, (0, 100, 200), -1)
-
-            # if hierarchy[0][i][2] == -1:
-            if len(approx) == 4 and cv2.contourArea(cnt) > 4000:
-                cv2.drawContours(image, [cnt], 0, (0, 255, 200), -1)
-
-        # cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
-        return edges
+        return image
 
 
 def nothing():
@@ -56,17 +70,16 @@ def nothing():
 def main():
     cap = cv2.VideoCapture(0)
     cap.open("http://192.168.1.2:8080/video")
-    cv2.namedWindow("thresh")
-    cv2.createTrackbar("MinHue", "thresh", 19, 255, nothing)
-    cv2.createTrackbar("MaxHue", "thresh", 79, 255, nothing)
+    cv2.namedWindow("Utils")
+    cv2.createTrackbar("MinHue", "Utils", 19, 255, nothing)
+    cv2.createTrackbar("MaxHue", "Utils", 79, 255, nothing)
 
     while True:
         _, frame = cap.read()
         frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
-        yellow = Utils.detectCube(frame)
+        detect = Utils.detectCube(frame)
 
-        cv2.imshow("thresh", yellow)
-        cv2.imshow("og", frame)
+        cv2.imshow("thresh", detect)
         if cv2.waitKey(1) == ord("a"):
             cv2.destroyAllWindows()
             break
