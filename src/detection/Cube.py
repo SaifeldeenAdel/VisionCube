@@ -52,17 +52,18 @@ class Cube:
         )
         contours = sorted(contours, reverse=True, key=cv2.contourArea)
 
-        # Draw bounding box on largest contour
-        contourBoundary = cv2.boundingRect(contours[0])
-        x, y, w, h = contourBoundary
+        if len(contours) > 0:
+          # Draw bounding box on largest contour
+          contourBoundary = cv2.boundingRect(contours[0])
+          x, y, w, h = contourBoundary
 
-        if abs(1 - (w / h)) < 0.2:
-            self.__drawFaceBoundary(detected, contourBoundary)
-            self.currentFace = self.findFaceColor(detected, contourBoundary)
-            # self.currentFace = Colors.BLUE
-        else:
-            self.currentFace = None
-
+          if abs(1 - (w / h)) < 0.2:
+              self.__drawFaceBoundary(detected, contourBoundary)
+              self.currentFace = self.findFaceColor(detected, contourBoundary)
+              # self.currentFace = Colors.BLUE
+          else:
+              self.currentFace = None
+              
         return detected
 
     def __drawFaceBoundary(self, img, contour) -> None:
