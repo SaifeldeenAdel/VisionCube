@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 class Utils:
     @staticmethod
     def displayImage(window_name, image) -> None:
@@ -10,7 +11,7 @@ class Utils:
         return
 
     @staticmethod
-    def extractColor(image, color) -> np.array:
+    def extractColor(image, color) -> bool:
         image = cv2.medianBlur(image, ksize=3)
 
         hsvImage = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -18,12 +19,21 @@ class Utils:
             hsvImage, np.array(color.getMinRange()), np.array(color.getMaxRange())
         )
         maskedImage = cv2.bitwise_and(image, image, mask=mask)
-        return maskedImage
+        if np.count_nonzero(mask == 255) > 100:
+            return True
+        return False
 
     @staticmethod
-    def write(frame, msg, org):
+    def write(frame, msg, org, color):
         cv2.putText(
-            frame, msg, org, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_8
+            frame,
+            msg,
+            org,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            color,
+            2,
+            cv2.LINE_8,
         )
 
 

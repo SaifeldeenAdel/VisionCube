@@ -41,7 +41,10 @@ class Cube:
         # Process img for finding contours
         gray = cv2.cvtColor(detected, cv2.COLOR_BGR2GRAY)
         blur = cv2.medianBlur(gray, 1)
-        _, thresh = cv2.threshold(blur, 42, 255, cv2.THRESH_BINARY_INV)
+
+        _, thresh = cv2.threshold(
+            blur, 70, 255, cv2.THRESH_BINARY_INV
+        )  # Change from 55-70
 
         # Find contours and sort by area
         contours, hierarchy = cv2.findContours(
@@ -53,9 +56,10 @@ class Cube:
         contourBoundary = cv2.boundingRect(contours[0])
         x, y, w, h = contourBoundary
 
-        if abs(1 - (w / h)) < 0.05:
+        if abs(1 - (w / h)) < 0.2:
             self.__drawFaceBoundary(detected, contourBoundary)
             self.currentFace = self.findFaceColor(detected, contourBoundary)
+            # self.currentFace = Colors.BLUE
         else:
             self.currentFace = None
 
@@ -68,8 +72,8 @@ class Cube:
             img,
             f"Face Detected {w/h}",
             (10, 30),
-            cv2.FONT_HERSHEY_PLAIN,
-            1.5,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
             (0, 255, 0),
             2,
             cv2.LINE_AA,
@@ -87,7 +91,6 @@ class Cube:
             centerX - 10 : centerX + 10,
         ]
 
-        # cv2.circle(img, (centerX, centerY), 3, (255, 255, 255), 2)
         cv2.rectangle(
             img,
             (centerX - 10, centerY - 10),
@@ -97,9 +100,14 @@ class Cube:
         )
 
         # Iterating over all colors to find the right one
-        extracted = Utils.extractColor(center, Colors.ORANGE)
+        for color in Colors:
+            if Utils.extractColor(center, color):
+                Utils.write(img, str(color), (10, 70), (255, 255, 255))
+                return color
+        Utils.write(
+            img, "Can't detect color, get better lighting", (10, 70), (0, 0, 120)
+        )
         return Colors.ORANGE
-
 
 def main():
     print("hey")
