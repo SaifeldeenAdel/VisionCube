@@ -15,11 +15,26 @@ class Utils:
         image = cv2.medianBlur(image, ksize=3)
 
         hsvImage = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # minHue = cv2.getTrackbarPos("MinHue", "Cube")
+        # minSaturation = cv2.getTrackbarPos("MinSat", "Cube")
+        # minValue = cv2.getTrackbarPos("MinVal", "Cube")
+
+        # maxHue = cv2.getTrackbarPos("MaxHue", "Cube")
+        # maxSaturation = cv2.getTrackbarPos("MaxSat", "Cube")
+        # maxValue = cv2.getTrackbarPos("MaxVal", "Cube")
+
+        # lowerThreshold = np.array([minHue, minSaturation, minValue])
+        # upperThreshold = np.array([maxHue, maxSaturation, maxValue])
+
+        # mask = cv2.inRange(hsvImage, lowerThreshold, upperThreshold)
+
         mask = cv2.inRange(
             hsvImage, np.array(color.getMinRange()), np.array(color.getMaxRange())
         )
         maskedImage = cv2.bitwise_and(image, image, mask=mask)
-        if np.count_nonzero(mask == 255) > 100:
+
+        if np.count_nonzero(mask == 255) > 150:
             return True
         return False
 

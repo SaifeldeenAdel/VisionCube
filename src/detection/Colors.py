@@ -10,6 +10,9 @@ class Colors(Enum):
     BLUE = 4
     GREEN = 5
 
+    def __str__(self):
+        return self.name.title()
+    
     def oppositeColor(self):
         if self == Colors.WHITE:
             return Colors.YELLOW
@@ -40,29 +43,28 @@ class Colors(Enum):
 
     def getMinRange(self) -> np.array:
         if self == Colors.WHITE:
-            return np.array([0, 0, 145], dtype=np.uint8)
+            return np.array([0, 0, 89], dtype=np.uint8)
         elif self == Colors.RED:
-            return np.array([0, 99, 70], dtype=np.uint8)
+            return np.array([168, 90, 36], dtype=np.uint8)
         elif self == Colors.ORANGE:
-            return np.array([9, 120, 106], dtype=np.uint8)
+            return np.array([7, 120, 95], dtype=np.uint8)
         elif self == Colors.YELLOW:
-            return np.array([24, 93, 115], dtype=np.uint8)
+            return np.array([22, 65, 75], dtype=np.uint8)
         elif self == Colors.BLUE:
-            return np.array([90, 125, 125], dtype=np.uint8)
+            return np.array([90, 100, 85], dtype=np.uint8)
         elif self == Colors.GREEN:
-            return np.array([49, 40, 109], dtype=np.uint8)
+            return np.array([49, 40, 65], dtype=np.uint8)
 
     def getMaxRange(self) -> np.array:
         if self == Colors.WHITE:
-            return np.array([179, 49, 240], dtype=np.uint8)
+            return np.array([145, 47, 253], dtype=np.uint8)
         elif self == Colors.RED:
-            return np.array([9, 226, 236], dtype=np.uint8)
+            return np.array([190, 250, 236], dtype=np.uint8)
         elif self == Colors.ORANGE:
-            return np.array([19, 244, 255], dtype=np.uint8)
+            return np.array([19, 255, 254], dtype=np.uint8)
         elif self == Colors.YELLOW:
-            return np.array([40, 245, 255], dtype=np.uint8)
+            return np.array([37, 244, 254], dtype=np.uint8)
         elif self == Colors.BLUE:
-            return np.array([115, 255, 255], dtype=np.uint8)
+            return np.array([123, 255, 200], dtype=np.uint8)
         elif self == Colors.GREEN:
-            return np.array([83, 203, 183], dtype=np.uint8)
-    
+            return np.array([83, 250, 197], dtype=np.uint8)

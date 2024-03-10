@@ -53,32 +53,23 @@ class Cube:
         contours = sorted(contours, reverse=True, key=cv2.contourArea)
 
         if len(contours) > 0:
-          # Draw bounding box on largest contour
-          contourBoundary = cv2.boundingRect(contours[0])
-          x, y, w, h = contourBoundary
+            # Draw bounding box on largest contour
+            contourBoundary = cv2.boundingRect(contours[0])
+            x, y, w, h = contourBoundary
 
-          if abs(1 - (w / h)) < 0.2:
-              self.__drawFaceBoundary(detected, contourBoundary)
-              self.currentFace = self.findFaceColor(detected, contourBoundary)
-              # self.currentFace = Colors.BLUE
-          else:
-              self.currentFace = None
-              
+            if abs(1 - (w / h)) < 0.2:
+                Utils.write(detected, f"Face Detected {w/h}", (10, 30), (0, 255, 00))
+                self.__drawFaceBoundary(detected, contourBoundary)
+                self.currentFace = self.findFaceColor(detected, contourBoundary)
+                return detected
+
+        Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
+        self.currentFace = None
         return detected
 
     def __drawFaceBoundary(self, img, contour) -> None:
         x, y, w, h = contour
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        cv2.putText(
-            img,
-            f"Face Detected {w/h}",
-            (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 255, 0),
-            2,
-            cv2.LINE_AA,
-        )
         return img
 
     def findFaceColor(self, img, contourBoundary):
@@ -87,15 +78,15 @@ class Cube:
 
         # Getting central coordinates and getting a chunk out of the center
         centerX, centerY = (x + (w // 2), y + (h // 2))
-        center = img[
+        center = img.copy()[
             centerY - 10 : centerY + 10,
             centerX - 10 : centerX + 10,
         ]
 
         cv2.rectangle(
             img,
-            (centerX - 10, centerY - 10),
-            (centerX + 10, centerY + 10),
+            (centerX - 1, centerY - 1),
+            (centerX + 1, centerY + 1),
             (255, 255, 255),
             2,
         )
@@ -103,12 +94,11 @@ class Cube:
         # Iterating over all colors to find the right one
         for color in Colors:
             if Utils.extractColor(center, color):
-                Utils.write(img, str(color), (10, 70), (255, 255, 255))
+                Utils.write(img, f"Current Face: {color}", (10, 70), (255, 255, 255))
                 return color
-        Utils.write(
-            img, "Can't detect color, get better lighting", (10, 70), (0, 0, 120)
-        )
-        return Colors.ORANGE
+        Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
+        return None
+
 
 def main():
     print("hey")
