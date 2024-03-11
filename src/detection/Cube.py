@@ -16,7 +16,7 @@ class Cube:
     def __init__(self):
         self.__faces = np.zeros(shape=(6, 3, 3))
         self.__initialised = False
-        self.currentFace = None
+        self.currentFace = np.zeros(shape=(3, 3))
 
     @classmethod
     def getInstance(cls):
@@ -58,43 +58,53 @@ class Cube:
             x, y, w, h = contourBoundary
 
             if abs(1 - (w / h)) < 0.2:
-                Utils.write(detected, f"Face Detected {w/h}", (10, 30), (0, 255, 00))
-                self.__drawFaceBoundary(detected, contourBoundary)
-                self.currentFace = self.findFaceColor(detected, contourBoundary)
+                Utils.write(detected, f"Face Detected ", (10, 30), (0, 255, 00))
+                self.drawFaceBoundary(detected, contourBoundary)
+                self.findCurrentFaceColors(detected, contourBoundary)
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
         self.currentFace = None
         return detected
 
-    def __drawFaceBoundary(self, img, contour) -> None:
+    def drawFaceBoundary(self, img, contour) -> None:
         x, y, w, h = contour
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return img
 
-    def findFaceColor(self, img, contourBoundary):
+    def findCurrentFaceColors(self, img, contourBoundary):
         x, y, w, h = contourBoundary
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        imgCopy = img.copy()
 
-        # Getting central coordinates and getting a chunk out of the center
-        centerX, centerY = (x + (w // 2), y + (h // 2))
-        center = img.copy()[
-            centerY - 10 : centerY + 10,
-            centerX - 10 : centerX + 10,
+        positions = [
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (0, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
         ]
 
-        cv2.rectangle(
-            img,
-            (centerX - 1, centerY - 1),
-            (centerX + 1, centerY + 1),
-            (255, 255, 255),
-            2,
-        )
+        squareSize = min(w, h) // 3
+        squares = [[None] * 3 for _ in range(3)]
+        centerX, centerY = (x + (w // 2), y + (h // 2))
+
+        # Extract chunks of the image for all 9 squares and draw white dots
+        for i, (dx, dy) in enumerate(positions):
+            x, y = centerX + dx * squareSize, centerY + dy * squareSize
+            row, col = i // 3, i % 3
+            squares[row][col] = imgCopy[y - 10 : y + 10, x - 10 : x + 10]
+            cv2.circle(img, (x, y), 2, (255, 255, 255), -1)  # White dot
 
         # Iterating over all colors to find the right one
         for color in Colors:
-            if Utils.extractColor(center, color):
-                Utils.write(img, f"Current Face: {color}", (10, 70), (255, 255, 255))
+            if Utils.extractColor(squares[1][1], color):
+                Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
+                Utils.write(img, f"{color}", (110, 70), (255, 255, 255))
+                self.currentFace = color
                 return color
         Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
         return None

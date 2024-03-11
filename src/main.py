@@ -11,7 +11,7 @@ def nothing(x):
 
 def main():
     cap = cv2.VideoCapture(0)
-    cap.open("http://192.168.144.236:8080/video")
+    cap.open("http://192.168.1.3:8080/video")
     cv2.namedWindow("Cube")
     cv2.createTrackbar("MinHue", "Cube", 0, 255, nothing)
     # cv2.createTrackbar("MaxHue", "Cube", 9, 255, nothing)
@@ -27,7 +27,7 @@ def main():
     while True:
         ret, frame = cap.read()
         if ret:
-            frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
+            frame = cv2.resize(frame, (960,540))
             detect = cube.detectFace(frame)
             cv2.imshow("Cube", detect)
 
