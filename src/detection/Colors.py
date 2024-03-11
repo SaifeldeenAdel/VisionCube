@@ -12,7 +12,7 @@ class Colors(Enum):
 
     def __str__(self):
         return self.name.title()
-    
+
     def oppositeColor(self):
         if self == Colors.WHITE:
             return Colors.YELLOW
@@ -29,17 +29,17 @@ class Colors(Enum):
 
     def getColorValue(self) -> np.array:
         if self == Colors.WHITE:
-            return np.array([255, 255, 255], dtype=np.uint8)
+            return (255, 255, 255)
         elif self == Colors.RED:
-            return np.array([255, 0, 0], dtype=np.uint8)
+            return (0, 0, 255)
         elif self == Colors.ORANGE:
-            return np.array([255, 165, 0], dtype=np.uint8)
+            return (0, 140, 255)
         elif self == Colors.YELLOW:
-            return np.array([255, 255, 0], dtype=np.uint8)
+            return (0, 255, 255)
         elif self == Colors.BLUE:
-            return np.array([0, 0, 255], dtype=np.uint8)
+            return (255, 0, 0)
         elif self == Colors.GREEN:
-            return np.array([0, 128, 0], dtype=np.uint8)
+            return (0, 200, 0)
 
     def getMinRange(self) -> np.array:
         if self == Colors.WHITE:

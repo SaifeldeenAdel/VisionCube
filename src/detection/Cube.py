@@ -16,7 +16,8 @@ class Cube:
     def __init__(self):
         self.__faces = np.zeros(shape=(6, 3, 3))
         self.__initialised = False
-        self.currentFace = np.zeros(shape=(3, 3))
+        self.currentFace = np.empty((3, 3), dtype=object)
+        self.currentFace.fill(None)
 
     @classmethod
     def getInstance(cls):
@@ -37,6 +38,7 @@ class Cube:
         return self.currentFace
 
     def detectFace(self, img) -> None:
+        self.drawSkeleton(img)
         detected = img.copy()
         # Process img for finding contours
         gray = cv2.cvtColor(detected, cv2.COLOR_BGR2GRAY)
@@ -64,7 +66,7 @@ class Cube:
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
-        self.currentFace = None
+        # self.currentFace = None
         return detected
 
     def drawFaceBoundary(self, img, contour) -> None:
@@ -76,6 +78,7 @@ class Cube:
         x, y, w, h = contourBoundary
         imgCopy = img.copy()
 
+        # 9 positions for all 9 squares
         positions = [
             (-1, -1),
             (0, -1),
@@ -88,8 +91,10 @@ class Cube:
             (1, 1),
         ]
 
+        # Initializing squares array which will hold image chunks
         squareSize = min(w, h) // 3
-        squares = [[None] * 3 for _ in range(3)]
+        squares = np.empty((3, 3), dtype=object)
+
         centerX, centerY = (x + (w // 2), y + (h // 2))
 
         # Extract chunks of the image for all 9 squares and draw white dots
@@ -97,17 +102,55 @@ class Cube:
             x, y = centerX + dx * squareSize, centerY + dy * squareSize
             row, col = i // 3, i % 3
             squares[row][col] = imgCopy[y - 10 : y + 10, x - 10 : x + 10]
-            cv2.circle(img, (x, y), 2, (255, 255, 255), -1)  # White dot
+            cv2.circle(img, (x, y), 2, (255, 255, 255), -1)
 
         # Iterating over all colors to find the right one
-        for color in Colors:
-            if Utils.extractColor(squares[1][1], color):
-                Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
-                Utils.write(img, f"{color}", (110, 70), (255, 255, 255))
-                self.currentFace = color
-                return color
-        Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
+        for row in range(3):
+            for col in range(3):
+                for color in Colors:
+                    if Utils.extractColor(squares[row][col], color):
+                        if row == 0 and col == 0:
+                            Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
+                            Utils.write(img, f"{color}", (110, 70), (255, 255, 255))
+                        self.currentFace[row][col] = color
+                        break
+                else:
+                    self.currentFace[row][col] = None
+
+        # Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
         return None
+
+    def drawSkeleton(self, img):
+        h, w, d = img.shape
+        black = (0, 0, 0)
+        border = (125, 125, 125)
+
+        # Calculating my square sizes
+        skeletonSize = 150
+        squareSize = skeletonSize // 3
+
+        # Getting the starting point
+        topLeftX = w - 180
+        topLeftY = 30
+
+        # Draw the Rubik's Cube face
+        for i in range(3):
+            for j in range(3):
+                # Calculate the coordinates of the square
+                x1 = topLeftX + squareSize * j
+                y1 = topLeftY + squareSize * i
+                x2 = x1 + squareSize
+                y2 = y1 + squareSize
+
+                color = (
+                    self.currentFace[i][j].getColorValue()
+                    if self.currentFace[i][j] is not None
+                    else black
+                )
+                cv2.rectangle(img, (x1, y1), (x2, y2), color, -1)
+                cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
+
+        return img
 
 
 def main():

@@ -27,7 +27,7 @@ def main():
     while True:
         ret, frame = cap.read()
         if ret:
-            frame = cv2.resize(frame, (960,540))
+            frame = cv2.resize(frame, (960, 540))
             detect = cube.detectFace(frame)
             cv2.imshow("Cube", detect)
 
