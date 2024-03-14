@@ -18,6 +18,7 @@ class Cube:
         self.__initialised = False
         self.currentFace = np.empty((3, 3), dtype=object)
         self.currentFace.fill(None)
+        self.faceColorsDetected = False
 
     @classmethod
     def getInstance(cls):
@@ -38,7 +39,6 @@ class Cube:
         return self.currentFace
 
     def detectFace(self, img) -> None:
-        self.drawSkeleton(img)
         detected = img.copy()
         # Process img for finding contours
         gray = cv2.cvtColor(detected, cv2.COLOR_BGR2GRAY)
@@ -54,15 +54,17 @@ class Cube:
         )
         contours = sorted(contours, reverse=True, key=cv2.contourArea)
 
+        self.drawSkeleton(detected)
         if len(contours) > 0:
             # Draw bounding box on largest contour
             contourBoundary = cv2.boundingRect(contours[0])
             x, y, w, h = contourBoundary
 
             if abs(1 - (w / h)) < 0.2:
-                Utils.write(detected, f"Face Detected ", (10, 30), (0, 255, 00))
                 self.drawFaceBoundary(detected, contourBoundary)
                 self.findCurrentFaceColors(detected, contourBoundary)
+                if self.faceColorsDetected:
+                    Utils.write(detected, f"Colors Detected ", (10, 30), (0, 255, 00))
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
@@ -109,9 +111,6 @@ class Cube:
             for col in range(3):
                 for color in Colors:
                     if Utils.extractColor(squares[row][col], color):
-                        if row == 0 and col == 0:
-                            Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
-                            Utils.write(img, f"{color}", (110, 70), (255, 255, 255))
                         self.currentFace[row][col] = color
                         break
                 else:
@@ -120,7 +119,7 @@ class Cube:
         # Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
         return None
 
-    def drawSkeleton(self, img):
+    def drawSkeleton(self, img) -> None:
         h, w, d = img.shape
         black = (0, 0, 0)
         border = (125, 125, 125)
@@ -133,6 +132,10 @@ class Cube:
         topLeftX = w - 180
         topLeftY = 30
 
+        self.faceColorsDetected = all(
+            square is not None for row in self.currentFace for square in row
+        )
+
         # Draw the Rubik's Cube face
         for i in range(3):
             for j in range(3):
@@ -144,13 +147,21 @@ class Cube:
 
                 color = (
                     self.currentFace[i][j].getColorValue()
-                    if self.currentFace[i][j] is not None
+                    if self.faceColorsDetected
                     else black
                 )
+
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, -1)
                 cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
 
-        return img
+        if self.faceColorsDetected:
+            Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
+            Utils.write(
+                img,
+                f"{self.currentFace[1][1]}",
+                (110, 70),
+                (255, 255, 255),
+            )
 
 
 def main():
