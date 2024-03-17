@@ -4,6 +4,8 @@ import os
 
 from detection.Utils import Utils
 from detection.Colors import Colors
+from pynput import keyboard
+
 
 imagesDir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "images"
@@ -14,11 +16,14 @@ class Cube:
     __instance = None
 
     def __init__(self):
-        self.__faces = np.zeros(shape=(6, 3, 3))
-        self.__initialised = False
+        self.state = {
+            color: np.array([[None] * 3] * 3, dtype=object) for color in Colors
+        }
         self.currentFace = np.empty((3, 3), dtype=object)
         self.currentFace.fill(None)
         self.faceColorsDetected = False
+        self.listener = keyboard.Listener(on_press=self.setCubeState)
+        self.listener.start()
 
     @classmethod
     def getInstance(cls):
@@ -26,8 +31,8 @@ class Cube:
             cls.__instance = Cube()
         return cls.__instance
 
-    def getFaces(self) -> np.array:
-        return self.__faces
+    def getState(self) -> np.array:
+        return self.state
 
     def isInitialised(self):
         return self.__initialised
@@ -37,6 +42,9 @@ class Cube:
 
     def getCurrentFace(self):
         return self.currentFace
+
+    def getCurrentCenter(self):
+        return self.currentFace[1][1]
 
     def detectFace(self, img) -> None:
         detected = img.copy()
@@ -65,6 +73,16 @@ class Cube:
                 self.findCurrentFaceColors(detected, contourBoundary)
                 if self.faceColorsDetected:
                     Utils.write(detected, f"Colors Detected ", (10, 30), (0, 255, 00))
+                    Utils.write(detected, f"Center:", (10, 70), (0, 255, 0))
+                    Utils.write(
+                        detected,
+                        f"{self.currentFace[1][1]}",
+                        (110, 70),
+                        (255, 255, 255),
+                    )
+                else:
+                    Utils.write(detected, f"Get Better Lighting ", (10, 30), (0, 0, 00))
+
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
@@ -106,18 +124,17 @@ class Cube:
             squares[row][col] = imgCopy[y - 10 : y + 10, x - 10 : x + 10]
             cv2.circle(img, (x, y), 2, (255, 255, 255), -1)
 
-        # Iterating over all colors to find the right one
+        # Extracting every color in all 9 squares
         for row in range(3):
             for col in range(3):
-                for color in Colors:
-                    if Utils.extractColor(squares[row][col], color):
-                        self.currentFace[row][col] = color
-                        break
-                else:
-                    self.currentFace[row][col] = None
+                self.currentFace[row][col] = Utils.extractColor(squares[row][col])
 
-        # Utils.write(img, f"Get better lighting", (10, 70), (255, 255, 255))
-        return None
+        # If there's one square undetected, whole face is compromised
+        self.faceColorsDetected = all(
+            square is not None for row in self.currentFace for square in row
+        )
+
+        return
 
     def drawSkeleton(self, img) -> None:
         h, w, d = img.shape
@@ -154,17 +171,13 @@ class Cube:
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, -1)
                 cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
 
+    def setCubeState(self, key):
         if self.faceColorsDetected:
-            Utils.write(img, f"Center:", (10, 70), (0, 255, 0))
-            Utils.write(
-                img,
-                f"{self.currentFace[1][1]}",
-                (110, 70),
-                (255, 255, 255),
-            )
+            self.getState()[self.getCurrentCenter()] = self.getCurrentFace()
 
 
 def main():
+    cube = Cube()
     print("hey")
 
 

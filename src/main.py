@@ -21,8 +21,7 @@ def main():
     cap = cv2.VideoCapture(0)
     cap.open("http://192.168.1.3:8080/video")
 
-    listener = keyboard.Listener(on_press=onPress)
-    listener.start()
+    
 
     cv2.namedWindow("Cube")
     cube = Cube.getInstance()

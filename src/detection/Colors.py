@@ -3,12 +3,12 @@ import numpy as np
 
 
 class Colors(Enum):
-    WHITE = 0
-    RED = 1
-    ORANGE = 2
-    YELLOW = 3
-    BLUE = 4
-    GREEN = 5
+    WHITE = "Wh"
+    RED = "Rd"
+    ORANGE = "Or"
+    YELLOW = "Yl"
+    BLUE = "Bl"
+    GREEN = "Gr"
 
     def __str__(self):
         return self.name.title()

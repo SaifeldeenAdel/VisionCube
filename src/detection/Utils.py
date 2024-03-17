@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from detection.Colors import Colors
 
 
 class Utils:
@@ -11,19 +12,20 @@ class Utils:
         return
 
     @staticmethod
-    def extractColor(image, color) -> bool:
+    def extractColor(image) -> Colors:
         image = cv2.medianBlur(image, ksize=3)
 
         hsvImage = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        mask = cv2.inRange(
-            hsvImage, np.array(color.getMinRange()), np.array(color.getMaxRange())
-        )
-        maskedImage = cv2.bitwise_and(image, image, mask=mask)
+        for color in Colors:
+            mask = cv2.inRange(
+                hsvImage, np.array(color.getMinRange()), np.array(color.getMaxRange())
+            )
+            # maskedImage = cv2.bitwise_and(image, image, mask=mask)
+            if np.count_nonzero(mask == 255) > 150:
+                return color
 
-        if np.count_nonzero(mask == 255) > 150:
-            return True
-        return False
+        return None
 
     @staticmethod
     def write(frame, msg, org, color):
