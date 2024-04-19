@@ -10,18 +10,9 @@ def nothing(x):
     pass
 
 
-def onPress(key):
-    try:
-        print("alphanumeric key {0} pressed".format(key.char))
-    except AttributeError:
-        print("special key {0} pressed".format(key))
-
-
 def main():
     cap = cv2.VideoCapture(0)
-    cap.open("http://192.168.1.3:8080/video")
-
-    
+    cap.open("http://192.168.27.244:8080/video")
 
     cv2.namedWindow("Cube")
     cube = Cube.getInstance()
@@ -30,7 +21,7 @@ def main():
         ret, frame = cap.read()
         if ret:
             frame = cv2.resize(frame, (960, 540))
-            detect = cube.detectFace(frame)
+            detect = cube.update(frame)
             cv2.imshow("Cube", detect)
 
             # if solver:

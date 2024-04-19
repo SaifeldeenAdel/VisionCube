@@ -3,15 +3,28 @@ import numpy as np
 
 
 class Colors(Enum):
-    WHITE = "Wh"
-    RED = "Rd"
-    ORANGE = "Or"
-    YELLOW = "Yl"
-    BLUE = "Bl"
-    GREEN = "Gr"
+    WHITE = 1
+    ORANGE = 2
+    RED = 3
+    BLUE = 4
+    GREEN = 5
+    YELLOW = 6
 
-    def __str__(self):
+    def __repr__(self) -> str:
+        super().__repr__()
         return self.name.title()
+
+    def __str__(self) -> str:
+        super().__str__()
+        return self.name.title()
+    
+        
+    @classmethod
+    def getColor(cls, value):
+      for color in cls:
+        if color.value == value:
+            return color
+      raise ValueError("Invalid color value")
 
     def oppositeColor(self):
         if self == Colors.WHITE:

@@ -19,8 +19,10 @@ class Cube:
         self.state = {
             color: np.array([[None] * 3] * 3, dtype=object) for color in Colors
         }
+        self.__initialised = False
         self.currentFace = np.empty((3, 3), dtype=object)
         self.currentFace.fill(None)
+        self.nextColor = Colors.WHITE
         self.faceColorsDetected = False
         self.listener = keyboard.Listener(on_press=self.setCubeState)
         self.listener.start()
@@ -45,6 +47,22 @@ class Cube:
 
     def getCurrentCenter(self):
         return self.currentFace[1][1]
+
+    def update(self, img) -> None:
+        while not self.isInitialised():
+            Utils.write(
+                img,
+                f"Show White face with Orange on top then press Space to start.",
+                (10, 30),
+                (0, 0, 0),
+            )
+            return img
+        if self.getCurrentCenter() is self.nextColor:
+            Utils.write(img, "Press space to save current face", (10, 30), (0, 0, 0))
+        else:
+            Utils.write(img, f"Show {self.nextColor} face", (10, 30), (0, 0, 0))
+
+        return self.detectFace(img)
 
     def detectFace(self, img) -> None:
         detected = img.copy()
@@ -72,20 +90,20 @@ class Cube:
                 self.drawFaceBoundary(detected, contourBoundary)
                 self.findCurrentFaceColors(detected, contourBoundary)
                 if self.faceColorsDetected:
-                    Utils.write(detected, f"Colors Detected ", (10, 30), (0, 255, 00))
-                    Utils.write(detected, f"Center:", (10, 70), (0, 255, 0))
+                    Utils.write(detected, f"Colors Detected ", (10, 70), (0, 255, 00))
+                    Utils.write(detected, f"Center:", (10, 110), (0, 255, 0))
                     Utils.write(
                         detected,
                         f"{self.currentFace[1][1]}",
-                        (110, 70),
+                        (110, 110),
                         (255, 255, 255),
                     )
                 else:
-                    Utils.write(detected, f"Get Better Lighting ", (10, 30), (0, 0, 00))
+                    Utils.write(detected, f"Get Better Lighting ", (10, 70), (0, 0, 00))
 
                 return detected
 
-        Utils.write(detected, f"No Face Detected", (10, 30), (0, 0, 255))
+        Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
         # self.currentFace = None
         return detected
 
@@ -172,8 +190,13 @@ class Cube:
                 cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
 
     def setCubeState(self, key):
-        if self.faceColorsDetected:
+        if not self.isInitialised():
+            self.__initialised = True
+            print(self.getState())
+        elif self.faceColorsDetected:
             self.getState()[self.getCurrentCenter()] = self.getCurrentFace()
+            self.nextColor = Colors.getColor(self.nextColor.value + 1)
+            print(self.getState())
 
 
 def main():
