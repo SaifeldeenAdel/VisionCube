@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from detection.Colors import Colors
+from detection.Directions import Directions
 
 
 class Utils:
@@ -39,6 +40,52 @@ class Utils:
             2,
             cv2.LINE_8,
         )
+
+    @staticmethod
+    def arrows(frame, contour, dir):
+        x, y, w, h = contour
+        squareSize = min(w, h) // 6
+
+        if dir == Directions.UP:
+            for i in range(1, 5, 2):
+                cv2.arrowedLine(
+                    frame,
+                    (x + squareSize * i, y + squareSize * 5),
+                    (x + squareSize * i, y + squareSize),
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_8,
+                )
+        elif dir == Directions.DOWN:
+            for i in range(1, 5, 2):
+                cv2.arrowedLine(
+                    frame,
+                    (x + squareSize * i, y + squareSize),
+                    (x + squareSize * i, y + squareSize * 5),
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_8,
+                )
+        elif dir == Directions.LEFT:
+            for i in range(1, 5, 2):
+                cv2.arrowedLine(
+                    frame,
+                    (x + squareSize * 5, y + squareSize * i),
+                    (x + squareSize, y + squareSize * i),
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_8,
+                )
+        elif dir == Directions.RIGHT:
+            for i in range(1, 5, 2):
+                cv2.arrowedLine(
+                    frame,
+                    (x + squareSize, y + squareSize * i),
+                    (x + squareSize * 5, y + squareSize * i),
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_8,
+                )
 
 
 def nothing():

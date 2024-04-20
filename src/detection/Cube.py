@@ -6,12 +6,6 @@ from detection.Utils import Utils
 from detection.Colors import Colors
 from pynput import keyboard
 
-
-imagesDir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "images"
-)
-
-
 class Cube:
     __instance = None
 
@@ -20,11 +14,14 @@ class Cube:
             color: np.array([[None] * 3] * 3, dtype=object) for color in Colors
         }
         self.__initialised = False
+        self.stateComplete = False
         self.currentFace = np.empty((3, 3), dtype=object)
         self.currentFace.fill(None)
+        self.contourBoundary = None
+
         self.nextColor = Colors.WHITE
         self.faceColorsDetected = False
-        self.listener = keyboard.Listener(on_press=self.setCubeState)
+        self.listener = keyboard.Listener(on_press=self.onKeyPress)
         self.listener.start()
 
     @classmethod
@@ -35,21 +32,39 @@ class Cube:
 
     def getState(self) -> np.array:
         return self.state
+    
+    def setState(self, color, face) -> None:
+        self.state[color] = face
 
-    def isInitialised(self):
+    def isInitialised(self) -> bool:
         return self.__initialised
 
-    def initialise(self):
+    def initialise(self) -> None:
         self.__initialised = True
 
-    def getCurrentFace(self):
+    def getCurrentFace(self) -> np.array:
         return self.currentFace
 
-    def getCurrentCenter(self):
+    def getCurrentCenter(self) -> Colors:
         return self.currentFace[1][1]
+    
+    def getContourBoundary(self):
+        return self.contourBoundary
+    
+    def isStateComplete(self):
+        return self.stateComplete
+    
+    def setContourBoundary(self, contour) -> None:
+        self.contourBoundary = contour
+    
+    def getNextColor(self) -> Colors:
+        return self.nextColor
+    
+    def setNextColor(self,color) -> None:
+        self.nextColor = color
 
     def update(self, img) -> None:
-        while not self.isInitialised():
+        if not self.isInitialised():
             Utils.write(
                 img,
                 f"Show White face with Orange on top then press Space to start.",
@@ -57,11 +72,14 @@ class Cube:
                 (0, 0, 0),
             )
             return img
-        if self.getCurrentCenter() is self.nextColor:
-            Utils.write(img, "Press space to save current face", (10, 30), (0, 0, 0))
-        else:
-            Utils.write(img, f"Show {self.nextColor} face", (10, 30), (0, 0, 0))
+        elif self.isStateComplete():
+            Utils.write(img, "Solution: ", (10, 30), (0, 0, 0))
 
+            
+        elif self.getCurrentCenter() is self.getNextColor():
+            Utils.write(img, "Press space to save current face", (10, 30), (0, 0, 0))
+        elif not self.isStateComplete:
+            Utils.write(img, f"Show {self.getNextColor()} face", (10, 30), (0, 0, 0))
         return self.detectFace(img)
 
     def detectFace(self, img) -> None:
@@ -87,8 +105,9 @@ class Cube:
             x, y, w, h = contourBoundary
 
             if abs(1 - (w / h)) < 0.2:
-                self.drawFaceBoundary(detected, contourBoundary)
-                self.findCurrentFaceColors(detected, contourBoundary)
+                self.setcontourBoundary(contourBoundary)
+                self.drawFaceBoundary(detected)
+                self.findCurrentFaceColors(detected)
                 if self.faceColorsDetected:
                     Utils.write(detected, f"Colors Detected ", (10, 70), (0, 255, 00))
                     Utils.write(detected, f"Center:", (10, 110), (0, 255, 0))
@@ -104,16 +123,15 @@ class Cube:
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
-        # self.currentFace = None
         return detected
 
-    def drawFaceBoundary(self, img, contour) -> None:
-        x, y, w, h = contour
+    def drawFaceBoundary(self, img) -> None:
+        x, y, w, h = self.getContourBoundary()
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return img
 
-    def findCurrentFaceColors(self, img, contourBoundary):
-        x, y, w, h = contourBoundary
+    def findCurrentFaceColors(self, img):
+        x, y, w, h = self.getContourBoundary()
         imgCopy = img.copy()
 
         # 9 positions for all 9 squares
@@ -189,13 +207,19 @@ class Cube:
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, -1)
                 cv2.rectangle(img, (x1, y1), (x2, y2), border, 2)
 
-    def setCubeState(self, key):
-        if not self.isInitialised():
+    def onKeyPress(self, key):
+        if key == keyboard.Key.enter and not self.isInitialised():
             self.__initialised = True
             print(self.getState())
-        elif self.faceColorsDetected:
-            self.getState()[self.getCurrentCenter()] = self.getCurrentFace()
-            self.nextColor = Colors.getColor(self.nextColor.value + 1)
+
+        if key == keyboard.Key.space and self.isInitialised():
+          if self.faceColorsDetected:
+            # Set the state of the current color to the current face being detected and setting the next color
+            self.setState(self.getCurrentCenter(), self.getCurrentFace())
+            if self.getNextColor().value == 5:
+                self.stateComplete = True
+            else:
+                self.setNextColor(Colors.getColor(self.nextColor.value + 1)) 
             print(self.getState())
 
 
