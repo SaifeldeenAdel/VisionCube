@@ -44,10 +44,10 @@ class Utils:
     @staticmethod
     def arrows(frame, contour, dir):
         x, y, w, h = contour
-        squareSize = min(w, h) // 6
+        squareSize = min(w, h) // 6 + 1
 
         if dir == Directions.UP:
-            for i in range(1, 5, 2):
+            for i in range(1, 7, 2):
                 cv2.arrowedLine(
                     frame,
                     (x + squareSize * i, y + squareSize * 5),

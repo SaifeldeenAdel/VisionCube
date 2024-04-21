@@ -4,7 +4,9 @@ import os
 
 from detection.Utils import Utils
 from detection.Colors import Colors
+from detection.Directions import Directions
 from pynput import keyboard
+
 
 class Cube:
     __instance = None
@@ -32,9 +34,9 @@ class Cube:
 
     def getState(self) -> np.array:
         return self.state
-    
+
     def setState(self, color, face) -> None:
-        self.state[color] = face
+        self.state[color] = face.copy()
 
     def isInitialised(self) -> bool:
         return self.__initialised
@@ -46,39 +48,40 @@ class Cube:
         return self.currentFace
 
     def getCurrentCenter(self) -> Colors:
-        return self.currentFace[1][1]
-    
+        if self.faceColorsDetected:
+            return self.currentFace[1][1]
+        return None
+
     def getContourBoundary(self):
         return self.contourBoundary
-    
+
     def isStateComplete(self):
         return self.stateComplete
-    
+
     def setContourBoundary(self, contour) -> None:
         self.contourBoundary = contour
-    
+
     def getNextColor(self) -> Colors:
         return self.nextColor
-    
-    def setNextColor(self,color) -> None:
+
+    def setNextColor(self, color) -> None:
         self.nextColor = color
 
     def update(self, img) -> None:
         if not self.isInitialised():
             Utils.write(
                 img,
-                f"Show White face with Orange on top then press Space to start.",
+                f"Show White face with Orange on top then press Enter to start.",
                 (10, 30),
                 (0, 0, 0),
             )
             return img
         elif self.isStateComplete():
             Utils.write(img, "Solution: ", (10, 30), (0, 0, 0))
-
-            
         elif self.getCurrentCenter() is self.getNextColor():
-            Utils.write(img, "Press space to save current face", (10, 30), (0, 0, 0))
-        elif not self.isStateComplete:
+            Utils.write(img, "Press space to save.", (10, 30), (0, 0, 0))
+            # Utils.arrows(img, self.getContourBoundary(), dir=Directions.LEFT)
+        elif not self.isStateComplete():
             Utils.write(img, f"Show {self.getNextColor()} face", (10, 30), (0, 0, 0))
         return self.detectFace(img)
 
@@ -105,7 +108,7 @@ class Cube:
             x, y, w, h = contourBoundary
 
             if abs(1 - (w / h)) < 0.2:
-                self.setcontourBoundary(contourBoundary)
+                self.setContourBoundary(contourBoundary)
                 self.drawFaceBoundary(detected)
                 self.findCurrentFaceColors(detected)
                 if self.faceColorsDetected:
@@ -189,7 +192,7 @@ class Cube:
             square is not None for row in self.currentFace for square in row
         )
 
-        # Draw the Rubik's Cube face
+        # Draw the skeleton
         for i in range(3):
             for j in range(3):
                 # Calculate the coordinates of the square
@@ -210,17 +213,20 @@ class Cube:
     def onKeyPress(self, key):
         if key == keyboard.Key.enter and not self.isInitialised():
             self.__initialised = True
-            print(self.getState())
 
-        if key == keyboard.Key.space and self.isInitialised():
-          if self.faceColorsDetected:
-            # Set the state of the current color to the current face being detected and setting the next color
-            self.setState(self.getCurrentCenter(), self.getCurrentFace())
-            if self.getNextColor().value == 5:
-                self.stateComplete = True
-            else:
-                self.setNextColor(Colors.getColor(self.nextColor.value + 1)) 
-            print(self.getState())
+        if (
+            key == keyboard.Key.space
+            and self.isInitialised()
+            and self.getCurrentCenter() is self.getNextColor()
+        ):
+            if self.faceColorsDetected:
+                # Set the state of the current color to the current face being detected and setting the next color
+                self.setState(self.getCurrentCenter(), self.getCurrentFace())
+                print(self.getState())
+                if self.getNextColor().value == 6:
+                    self.stateComplete = True
+                else:
+                    self.setNextColor(Colors.getColor(self.nextColor.value + 1))
 
 
 def main():
