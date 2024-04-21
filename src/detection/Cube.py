@@ -4,7 +4,8 @@ import os
 
 from detection.Utils import Utils
 from detection.Colors import Colors
-from detection.Directions import Directions
+from solver.Directions import Directions
+from solver.Solver import Solver
 from pynput import keyboard
 
 
@@ -83,6 +84,11 @@ class Cube:
             # Utils.arrows(img, self.getContourBoundary(), dir=Directions.LEFT)
         elif not self.isStateComplete():
             Utils.write(img, f"Show {self.getNextColor()} face", (10, 30), (0, 0, 0))
+            nextDir = Solver.getNextMoveToBuildState(
+                self.getState(), self.getCurrentCenter()
+            )
+            Utils.arrows(img, self.getContourBoundary(), dir=nextDir)
+
         return self.detectFace(img)
 
     def detectFace(self, img) -> None:
@@ -222,7 +228,6 @@ class Cube:
             if self.faceColorsDetected:
                 # Set the state of the current color to the current face being detected and setting the next color
                 self.setState(self.getCurrentCenter(), self.getCurrentFace())
-                print(self.getState())
                 if self.getNextColor().value == 6:
                     self.stateComplete = True
                 else:
