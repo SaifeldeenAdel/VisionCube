@@ -3,12 +3,12 @@ import numpy as np
 
 
 class Colors(Enum):
-    WHITE = 1
-    ORANGE = 2
-    RED = 3
-    BLUE = 4
-    GREEN = 5
-    YELLOW = 6
+    WHITE = (1, "F")
+    ORANGE = (2, "U")
+    RED = (3, "D")
+    BLUE = (4, "R")
+    GREEN = (5, "L")
+    YELLOW = (6, "B")
 
     def __repr__(self) -> str:
         super().__repr__()
@@ -17,28 +17,19 @@ class Colors(Enum):
     def __str__(self) -> str:
         super().__str__()
         return self.name.title()
-    
-        
+
+    def getValue(self):
+        return self.value[0]
+
+    def getOrient(self):
+        return self.value[1]
+
     @classmethod
     def getColor(cls, value):
-      for color in cls:
-        if color.value == value:
-            return color
-      raise ValueError("Invalid color value")
-
-    def oppositeColor(self):
-        if self == Colors.WHITE:
-            return Colors.YELLOW
-        elif self == Colors.RED:
-            return Colors.ORANGE
-        elif self == Colors.ORANGE:
-            return Colors.RED
-        elif self == Colors.YELLOW:
-            return Colors.WHITE
-        elif self == Colors.BLUE:
-            return Colors.GREEN
-        elif self == Colors.GREEN:
-            return Colors.BLUE
+        for color in cls:
+            if color.getValue() == value:
+                return color
+        raise ValueError("Invalid color value")
 
     def getColorValue(self) -> np.array:
         if self == Colors.WHITE:

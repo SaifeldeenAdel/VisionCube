@@ -1,10 +1,11 @@
 from solver.Directions import Directions
 from detection.Colors import Colors
+import kociemba
 
 
 class Solver:
     def __init__(self) -> None:
-        self.cubeString = ""
+        pass
 
     @staticmethod
     def getNextMoveToBuildState(state, center) -> Directions:
@@ -19,13 +20,32 @@ class Solver:
                 return Directions.LEFT
             elif state[Colors.GREEN][0][0] == None:
                 return Directions.RIGHT
+            elif state[Colors.YELLOW][0][0] == None:
+                return Directions.RIGHT
         elif center == Colors.ORANGE:
             return Directions.UP
         elif center == Colors.RED:
             return Directions.DOWN
         elif center == Colors.GREEN:
-            return Directions.LEFT
+            if state[Colors.YELLOW][0][0] == None:
+                return Directions.RIGHT
+            else:
+                return Directions.LEFT
         elif center == Colors.BLUE:
             return Directions.RIGHT
         elif center == Colors.YELLOW:
             return Directions.LEFT
+
+    @staticmethod
+    def generateCubeString(state) -> str:
+        #    O
+        # G  W   B   Y
+        #    R
+        # cubeString = ""
+        # order = [1, 0, 3, 2, 4, 5]
+        # for i in order:
+        #     for color in Colors[i]:
+        #         cubeString += color.getOrient()
+        # return cubeString
+
+        return kociemba.solve("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")

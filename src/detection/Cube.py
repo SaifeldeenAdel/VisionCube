@@ -18,6 +18,7 @@ class Cube:
         }
         self.__initialised = False
         self.stateComplete = False
+        self.solvingMode = False
         self.currentFace = np.empty((3, 3), dtype=object)
         self.currentFace.fill(None)
         self.contourBoundary = None
@@ -59,6 +60,9 @@ class Cube:
     def isStateComplete(self):
         return self.stateComplete
 
+    def isSolvingMode(self):
+        return self.solvingMode
+
     def setContourBoundary(self, contour) -> None:
         self.contourBoundary = contour
 
@@ -77,11 +81,32 @@ class Cube:
                 (0, 0, 0),
             )
             return img
+
         elif self.isStateComplete():
-            Utils.write(img, "Solution: ", (10, 30), (0, 0, 0))
+            if self.getCurrentCenter() is not Colors.WHITE and not self.isSolvingMode():
+                nextDir = Solver.getNextMoveToBuildState(
+                    self.getState(), self.getCurrentCenter()
+                )
+                Utils.arrows(img, self.getContourBoundary(), dir=nextDir)
+                Utils.write(img, "Face Towards White", (10, 30), (0, 0, 0))
+            else:
+                self.solvingMode = True
+                Utils.write(
+                    img,
+                    f"Solution Algorithm:",
+                    (10, 30),
+                    (0, 0, 200),
+                )
+                Utils.write(
+                    img,
+                    f"{Solver.generateCubeString(self.state)}",
+                    (10, 70),
+                    (0, 0, 0),
+                )
+
         elif self.getCurrentCenter() is self.getNextColor():
             Utils.write(img, "Press space to save.", (10, 30), (0, 0, 0))
-            # Utils.arrows(img, self.getContourBoundary(), dir=Directions.LEFT)
+
         elif not self.isStateComplete():
             Utils.write(img, f"Show {self.getNextColor()} face", (10, 30), (0, 0, 0))
             nextDir = Solver.getNextMoveToBuildState(
@@ -89,9 +114,14 @@ class Cube:
             )
             Utils.arrows(img, self.getContourBoundary(), dir=nextDir)
 
+        if not self.isSolvingMode():
+            self.drawSkeleton(img)
+
         return self.detectFace(img)
 
     def detectFace(self, img) -> None:
+        if self.isSolvingMode():
+            return img
         detected = img.copy()
         # Process img for finding contours
         gray = cv2.cvtColor(detected, cv2.COLOR_BGR2GRAY)
@@ -107,28 +137,19 @@ class Cube:
         )
         contours = sorted(contours, reverse=True, key=cv2.contourArea)
 
-        self.drawSkeleton(detected)
         if len(contours) > 0:
             # Draw bounding box on largest contour
             contourBoundary = cv2.boundingRect(contours[0])
             x, y, w, h = contourBoundary
 
             if abs(1 - (w / h)) < 0.2:
+                # Draws the contour and tries to find the colors inside that boundary and create the cube face
                 self.setContourBoundary(contourBoundary)
                 self.drawFaceBoundary(detected)
                 self.findCurrentFaceColors(detected)
-                if self.faceColorsDetected:
-                    Utils.write(detected, f"Colors Detected ", (10, 70), (0, 255, 00))
-                    Utils.write(detected, f"Center:", (10, 110), (0, 255, 0))
-                    Utils.write(
-                        detected,
-                        f"{self.currentFace[1][1]}",
-                        (110, 110),
-                        (255, 255, 255),
-                    )
-                else:
-                    Utils.write(detected, f"Get Better Lighting ", (10, 70), (0, 0, 00))
 
+                if not self.faceColorsDetected:
+                    Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
                 return detected
 
         Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
@@ -228,10 +249,10 @@ class Cube:
             if self.faceColorsDetected:
                 # Set the state of the current color to the current face being detected and setting the next color
                 self.setState(self.getCurrentCenter(), self.getCurrentFace())
-                if self.getNextColor().value == 6:
+                if self.getNextColor().getValue() == 6:
                     self.stateComplete = True
                 else:
-                    self.setNextColor(Colors.getColor(self.nextColor.value + 1))
+                    self.setNextColor(Colors.getColor(self.nextColor.getValue() + 1))
 
 
 def main():
