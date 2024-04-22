@@ -43,7 +43,7 @@ class Solver:
         #    R
         colorList = list(Colors)
         cubeString = ""
-        order = [1, 0, 3, 2, 4, 5]
+        order = [1, 3, 0, 2, 4, 5]
         for i in order:
             for row in state[colorList[i]]:
                 for col in row:

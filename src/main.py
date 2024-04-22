@@ -12,7 +12,7 @@ def nothing(x):
 
 def main():
     cap = cv2.VideoCapture(0)
-    cap.open("http://192.168.243.233:8080/video")
+    cap.open("http://192.168.105.94:8080/video")
 
     cv2.namedWindow("Cube")
     cube = Cube.getInstance()
