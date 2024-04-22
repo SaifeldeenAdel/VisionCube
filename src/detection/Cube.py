@@ -37,6 +37,11 @@ class Cube:
     def getState(self) -> np.array:
         return self.state
 
+    def resetState(self) -> None:
+        self.state = {
+            color: np.array([[None] * 3] * 3, dtype=object) for color in Colors
+        }
+
     def setState(self, color, face) -> None:
         self.state[color] = face.copy()
 
@@ -113,6 +118,8 @@ class Cube:
                 self.getState(), self.getCurrentCenter()
             )
             Utils.arrows(img, self.getContourBoundary(), dir=nextDir)
+
+        Utils.write(img, "Press R to reset.", (10, img.shape[0] - 20), (0, 0, 200))
 
         if not self.isSolvingMode():
             self.drawSkeleton(img)
@@ -241,7 +248,7 @@ class Cube:
         if key == keyboard.Key.enter and not self.isInitialised():
             self.__initialised = True
 
-        if (
+        elif (
             key == keyboard.Key.space
             and self.isInitialised()
             and self.getCurrentCenter() is self.getNextColor()
@@ -253,6 +260,13 @@ class Cube:
                     self.stateComplete = True
                 else:
                     self.setNextColor(Colors.getColor(self.nextColor.getValue() + 1))
+        elif "char" in dir(key):
+            if key.char == "r" or key.char == "R":
+                self.__initialised = False
+                self.stateComplete = False
+                self.solvingMode = False
+                self.nextColor = Colors.WHITE
+                self.resetState()
 
 
 def main():
