@@ -41,11 +41,11 @@ class Solver:
         #    O
         # G  W   B   Y
         #    R
-        # cubeString = ""
-        # order = [1, 0, 3, 2, 4, 5]
-        # for i in order:
-        #     for color in Colors[i]:
-        #         cubeString += color.getOrient()
-        # return cubeString
-
-        return kociemba.solve("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")
+        colorList = list(Colors)
+        cubeString = ""
+        order = [1, 0, 3, 2, 4, 5]
+        for i in order:
+            for row in state[colorList[i]]:
+                for col in row:
+                    cubeString += col.getOrient()
+        return kociemba.solve(cubeString)
