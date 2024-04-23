@@ -9,6 +9,7 @@ class Solver:
 
     @staticmethod
     def getNextMoveToBuildState(state, center) -> Directions:
+        
         if center == Colors.WHITE:
             if state[Colors.WHITE][0][0] == None:
                 return None

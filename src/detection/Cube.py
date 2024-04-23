@@ -121,9 +121,6 @@ class Cube:
 
         Utils.write(img, "Press R to reset.", (10, img.shape[0] - 20), (0, 0, 200))
 
-        if not self.isSolvingMode():
-            self.drawSkeleton(img)
-
         return self.detectFace(img)
 
     def detectFace(self, img) -> None:
@@ -143,23 +140,26 @@ class Cube:
             thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
         contours = sorted(contours, reverse=True, key=cv2.contourArea)
-
+        self.drawSkeleton(detected)
+        # cv2.imshow("thresh", thresh)
         if len(contours) > 0:
             # Draw bounding box on largest contour
             contourBoundary = cv2.boundingRect(contours[0])
             x, y, w, h = contourBoundary
 
-            if abs(1 - (w / h)) < 0.2:
+            if abs(1 - (w / h)) < 0.1:
                 # Draws the contour and tries to find the colors inside that boundary and create the cube face
                 self.setContourBoundary(contourBoundary)
                 self.drawFaceBoundary(detected)
                 self.findCurrentFaceColors(detected)
 
-                if not self.faceColorsDetected:
-                    Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
-                return detected
+                # if not self.faceColorsDetected:
+                #     Utils.write(detected, f"No Face Detected2", (10, 70), (0, 0, 255))
+                # return detected
+            else:
+                self.setContourBoundary(None)
 
-        Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
+        # Utils.write(detected, f"No Face Detected", (10, 70), (0, 0, 255))
         return detected
 
     def drawFaceBoundary(self, img) -> None:
